@@ -12,6 +12,7 @@
 		A77B32081C46523C00A22911 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = A77B32061C46523C00A22911 /* Main.storyboard */; };
 		A77B320A1C46523C00A22911 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = A77B32091C46523C00A22911 /* Assets.xcassets */; };
 		A77B320D1C46523C00A22911 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = A77B320B1C46523C00A22911 /* LaunchScreen.storyboard */; };
+		A77B32151C46525A00A22911 /* LedPadView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A77B32141C46525A00A22911 /* LedPadView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -22,6 +23,7 @@
 		A77B32091C46523C00A22911 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		A77B320C1C46523C00A22911 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		A77B320E1C46523C00A22911 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		A77B32141C46525A00A22911 /* LedPadView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = LedPadView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -56,6 +58,7 @@
 			children = (
 				A77B32021C46523C00A22911 /* AppDelegate.swift */,
 				A77B32041C46523C00A22911 /* ViewController.swift */,
+				A77B32141C46525A00A22911 /* LedPadView.swift */,
 				A77B32061C46523C00A22911 /* Main.storyboard */,
 				A77B32091C46523C00A22911 /* Assets.xcassets */,
 				A77B320B1C46523C00A22911 /* LaunchScreen.storyboard */,
@@ -137,6 +140,7 @@
 			files = (
 				A77B32051C46523C00A22911 /* ViewController.swift in Sources */,
 				A77B32031C46523C00A22911 /* AppDelegate.swift in Sources */,
+				A77B32151C46525A00A22911 /* LedPadView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
