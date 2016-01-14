@@ -33,11 +33,11 @@ class LedPadView: UIView {
     //第一个圆的Y
     var firstPointY:CGFloat = 140
     //led的边长(一排的数量)
-    var ledLength:Int = 8
+    var ledLength:Int = 12
     //靠边的距离
     var sideWidth:CGFloat = 10
     //两个圆边与边的距离
-    var circleSideWidth:CGFloat = 20
+    var circleSideWidth:CGFloat = 10
     
     
     override init(frame: CGRect) {
@@ -65,6 +65,9 @@ class LedPadView: UIView {
                 print("\(l1), \(l2)")
             drawLine(points[l1], p2: points[l2])
             }
+        }
+        if (self.selectIndexs.count > 0) {
+            drawLine(points[self.selectIndexs.last!], p2: self.fingerPoint)
         }
         drawCircles()
     }
@@ -169,9 +172,13 @@ class LedPadView: UIView {
     }
     
     override func touchesEnded(touches: Set<UITouch>, withEvent event: UIEvent?) {
+        if self.selectIndexs.count > 0 {
+            self.fingerPoint = self.points[self.selectIndexs.last!]
+            self.setNeedsDisplay()
+        }
     }
     
     override func touchesCancelled(touches: Set<UITouch>?, withEvent event: UIEvent?) {
     }
-
+    
 }
