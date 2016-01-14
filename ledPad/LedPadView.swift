@@ -37,14 +37,14 @@ class LedPadView: UIView {
     //靠边的距离
     var sideWidth:CGFloat = 10
     //两个圆边与边的距离
-    var circleSideWidth:CGFloat = 10
+    var circleSideWidth:CGFloat = 20
     
     
     override init(frame: CGRect) {
         super.init(frame: frame)
         let screenW = UIScreen.mainScreen().bounds.width
         print("screenWidth = \(screenW)")
-        self.backgroundColor = UIColor.grayColor()
+        self.backgroundColor = UIColor(red: 70/255, green: 80/255, blue: 60/255, alpha: 1)
         centerDistance = (screenW-self.sideWidth*2.0)/CGFloat(self.ledLength)
         circleRadius = (screenW-self.circleSideWidth*CGFloat(self.ledLength-1)-self.sideWidth*2.0) / CGFloat(self.ledLength*2)
         firstPointX = sideWidth + circleRadius
@@ -58,7 +58,6 @@ class LedPadView: UIView {
     }
     
     override func drawRect(rect: CGRect) {
-        drawCircles()
         for i in 0..<self.selectIndexs.count {
             if (i+1) < self.selectIndexs.count {
             let l1 = self.selectIndexs[i]
@@ -67,6 +66,7 @@ class LedPadView: UIView {
             drawLine(points[l1], p2: points[l2])
             }
         }
+        drawCircles()
     }
     
     func fillPoints () {
@@ -94,7 +94,7 @@ class LedPadView: UIView {
             return
         }
         let bp = UIBezierPath()
-        bp.lineWidth = 3
+        bp.lineWidth = 4
         bp.lineCapStyle = .Round
         //UIColor(red: 0.4, green: 0.5, blue: 0.4, alpha: 1).setStroke()
         UIColor.redColor().setStroke()
@@ -111,19 +111,19 @@ class LedPadView: UIView {
     
     func drawCircle(point:CGPoint, index:Int) {
         let context = UIGraphicsGetCurrentContext()
-        if false {
-            //       if contains(index) {
-            UIColor.greenColor().setStroke()
-            UIColor.redColor().setFill()
-        } else {
-            UIColor.yellowColor().setStroke()
+        if contains(index) {
+            UIColor.redColor().setStroke()
             UIColor.yellowColor().setFill()
-            
+        } else {
+            UIColor(red: 40/255, green: 60/255, blue: 50/255, alpha: 1).setFill()
+            UIColor(red: 40/255, green: 50/255, blue: 50/255, alpha: 1).setStroke()
         }
-        CGContextSetLineWidth(context, 2.0)
         CGContextAddArc(context, point.x, point.y, self.circleRadius, 0, CGFloat(M_PI*2), 1)
         //CGContextStrokePath(context)
         CGContextFillPath(context)
+        CGContextSetLineWidth(context, 4.0)
+        CGContextAddArc(context, point.x, point.y, self.circleRadius, 0, CGFloat(M_PI*2), 1)
+        CGContextStrokePath(context)
     }
     
     func drawCircles() {
