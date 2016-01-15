@@ -45,6 +45,10 @@ class LedPadView: UIView {
     let pointNornalColor = UIColor(red: 40/255, green: 60/255, blue: 50/255, alpha: 1)
     let pointStrokeColor = UIColor(red: 40/255, green: 50/255, blue: 50/255, alpha: 1)
     
+    var switchButton:UIButton!
+    
+    var drawState:Bool = true
+    
     override init(frame: CGRect) {
         super.init(frame: frame)
         let screenW = UIScreen.mainScreen().bounds.width
@@ -61,18 +65,32 @@ class LedPadView: UIView {
         createButton("Undo", action: "undoActive", frame:  CGRect(x: sideDistance + 90 + 10, y: self.firstPointY+sideLength, width: 90, height: 40))
         createButton("Redo", action: "redoActive", frame:  CGRect(x: sideDistance + 90 * 2 + 10 * 2, y: self.firstPointY+sideLength, width: 90, height: 40))
         createButton("OK", action: "okActive", frame:  CGRect(x: sideDistance + 90 * 3 + 10 * 3, y: self.firstPointY+sideLength, width: 70, height: 40))
+        createButton("OK", action: "okActive", frame:  CGRect(x: sideDistance + 90 * 3 + 10 * 3, y: self.firstPointY+sideLength, width: 70, height: 40))
+        switchButton = createButton("point", action: "valueChanged", frame:  CGRect(x: screenW/2-35.0, y: self.firstPointY+sideLength + 60, width: 70, height: 40))
     }
     
-    func createButton(name:String, action: Selector, frame: CGRect) {
-        let clearButton = UIButton(type: UIButtonType.Custom)
-        clearButton.frame = frame
-        clearButton.backgroundColor = backColor
-        clearButton.setTitle(name, forState: UIControlState.Normal)
-        clearButton.titleLabel?.font = UIFont.systemFontOfSize(28)
-        clearButton.setTitleColor(buttonNornalColor, forState: UIControlState.Normal)
-        clearButton.setTitleColor(buttonApplicationColor, forState: UIControlState.Application)
-        clearButton.addTarget(self, action: action, forControlEvents: UIControlEvents.TouchUpInside)
-        self.addSubview(clearButton)
+    func createButton(name:String, action: Selector, frame: CGRect) -> UIButton {
+        let button = UIButton(type: UIButtonType.Custom)
+        button.frame = frame
+        button.backgroundColor = backColor
+        button.setTitle(name, forState: UIControlState.Normal)
+        button.titleLabel?.font = UIFont.systemFontOfSize(28)
+        button.setTitleColor(buttonNornalColor, forState: UIControlState.Normal)
+        button.setTitleColor(buttonApplicationColor, forState: UIControlState.Application)
+        button.addTarget(self, action: action, forControlEvents: UIControlEvents.TouchUpInside)
+        self.addSubview(button)
+        return button
+    }
+    
+    func valueChanged () {
+        if switchButton.titleLabel?.text == "point" {
+            switchButton.setTitle("line", forState: UIControlState.Normal)
+            drawState = false
+        } else {
+            switchButton.setTitle("point", forState: UIControlState.Normal)
+            drawState = true
+        }
+     self.setNeedsDisplay()
     }
     
     func clearActive() {
@@ -125,23 +143,27 @@ class LedPadView: UIView {
     }
     
     override func drawRect(rect: CGRect) {
-        for i in 0..<self.selectIndexs.count {
-            for j in 0..<self.selectIndexs[i].count {
-                if (j+1) < self.selectIndexs[i].count {
-                    let l1 = self.selectIndexs[i][j]
-                    let l2 = self.selectIndexs[i][j+1]
-                    drawLine(points[l1], p2: points[l2])
+        if (drawState == true) {
+            for i in 0..<self.selectIndexs.count {
+                for j in 0..<self.selectIndexs[i].count {
+                    if (j+1) < self.selectIndexs[i].count {
+                        let l1 = self.selectIndexs[i][j]
+                        let l2 = self.selectIndexs[i][j+1]
+                        drawLine(points[l1], p2: points[l2])
+                    }
                 }
             }
-        }
-        
-        let lastIndex = self.selectIndexs.count-1
-        if ( lastIndex >= 0 && self.selectIndexs[lastIndex].count > 0) {
-            drawLine(points[self.selectIndexs[lastIndex].last!], p2: self.fingerPoint)
+            
+            let lastIndex = self.selectIndexs.count-1
+            if ( lastIndex >= 0 && self.selectIndexs[lastIndex].count > 0) {
+                drawLine(points[self.selectIndexs[lastIndex].last!], p2: self.fingerPoint)
+            }
         }
         drawCircles()
-        for i in 0..<self.drawPoints.count {
-            drawLines(self.drawPoints[i], color: UIColor.greenColor())
+        if (drawState == false) {
+            for i in 0..<self.drawPoints.count {
+                drawLines(self.drawPoints[i], color: UIColor.greenColor())
+            }
         }
     }
     
@@ -189,7 +211,7 @@ class LedPadView: UIView {
     
     func drawCircle(point:CGPoint, index:Int) {
         let context = UIGraphicsGetCurrentContext()
-        if contains(index) {
+        if contains(index) && drawState {
             UIColor.redColor().setStroke()
             UIColor.yellowColor().setFill()
         } else {
@@ -253,7 +275,8 @@ class LedPadView: UIView {
     }
     
     override func touchesBegan(touches: Set<UITouch>, withEvent event: UIEvent?) {
-        //self.selectIndexs.removeAll(keepCapacity: false)
+        self.deletedPoints.removeAll(keepCapacity: false)
+        self.deletedIndexs.removeAll(keepCapacity: false)
         self.selectIndexs.append([Int]())
         self.fingerPoint = (touches.first?.locationInView(self))!
         self.drawPoints.append([CGPoint]())
