@@ -41,7 +41,7 @@ class LedPadView: UIView {
     
     let backColor = UIColor(red: 40/255, green: 60/255, blue: 50/255, alpha: 1)
     let buttonNornalColor = UIColor(red: 60/255, green: 90/255, blue: 70/255, alpha: 1)
-    let buttonApplicationColor = UIColor(red: 60/255, green: 90/255, blue: 70/255, alpha: 1)
+    let buttonApplicationColor = UIColor(red: 60/255, green: 190/255, blue: 70/255, alpha: 1)
     let pointNornalColor = UIColor(red: 40/255, green: 60/255, blue: 50/255, alpha: 1)
     let pointStrokeColor = UIColor(red: 40/255, green: 50/255, blue: 50/255, alpha: 1)
     
@@ -57,25 +57,35 @@ class LedPadView: UIView {
         firstPointY = 140
         print("R = \(circleRadius)")
         fillPoints()
-        createButton("Clear", action: "clearActive", frame:  CGRect(x: sideDistance, y: self.firstPointY+sideLength, width: 90, height: 40))
-        createButton("Undo", action: "undoActive", frame:  CGRect(x: sideDistance + 90 + 10, y: self.firstPointY+sideLength, width: 90, height: 40))
-        createButton("Redo", action: "redoActive", frame:  CGRect(x: sideDistance + 90 * 2 + 10 * 2, y: self.firstPointY+sideLength, width: 90, height: 40))
-        createButton("OK", action: "okActive", frame:  CGRect(x: sideDistance + 90 * 3 + 10 * 3, y: self.firstPointY+sideLength, width: 70, height: 40))
+        createButton("Clear", action: "clearActive:", frame:  CGRect(x: sideDistance, y: self.firstPointY+sideLength, width: 90, height: 40))
+        createButton("Undo", action: "undoActive:", frame:  CGRect(x: sideDistance + 90 + 10, y: self.firstPointY+sideLength, width: 90, height: 40))
+        createButton("Redo", action: "redoActive:", frame:  CGRect(x: sideDistance + 90 * 2 + 10 * 2, y: self.firstPointY+sideLength, width: 90, height: 40))
+        createButton("OK", action: "okActive:", frame:  CGRect(x: sideDistance + 90 * 3 + 10 * 3, y: self.firstPointY+sideLength, width: 70, height: 40))
     }
     
     func createButton(name:String, action: Selector, frame: CGRect) {
-        let clearButton = UIButton(type: UIButtonType.Custom)
-        clearButton.frame = frame
-        clearButton.backgroundColor = backColor
-        clearButton.setTitle(name, forState: UIControlState.Normal)
-        clearButton.titleLabel?.font = UIFont.systemFontOfSize(28)
-        clearButton.setTitleColor(buttonNornalColor, forState: UIControlState.Normal)
-        clearButton.setTitleColor(buttonApplicationColor, forState: UIControlState.Application)
-        clearButton.addTarget(self, action: action, forControlEvents: UIControlEvents.TouchUpInside)
-        self.addSubview(clearButton)
+        let button = UIButton(type: UIButtonType.Custom)
+        button.frame = frame
+        button.backgroundColor = backColor
+        button.adjustsImageWhenHighlighted = true
+        button.setTitle(name, forState: UIControlState.Normal)
+        button.titleLabel?.font = UIFont.systemFontOfSize(28)
+        button.setTitleColor(buttonNornalColor, forState: UIControlState.Normal)
+        button.setTitleColor(buttonApplicationColor, forState: UIControlState.Highlighted)
+        button.addTarget(self, action: action, forControlEvents: UIControlEvents.TouchUpInside)
+        self.addSubview(button)
     }
     
-    func clearActive() {
+    func buttonAnimation (button:UIButton) {
+        UIButton.setAnimationRepeatAutoreverses(true)
+        UIButton.animateWithDuration(0.1, animations: { () -> Void in
+            button.backgroundColor = UIColor(red: 0, green: 0, blue: 0, alpha: 0)
+            }) { (finish) -> Void in
+            button.backgroundColor = self.backColor
+        }
+    }
+    
+    func clearActive(sender:UIButton) {
         if (!self.selectIndexs.isEmpty) {
             self.selectIndexs.removeAll(keepCapacity: false)
             self.drawPoints.removeAll(keepCapacity: false)
@@ -83,9 +93,10 @@ class LedPadView: UIView {
             self.deletedPoints.removeAll(keepCapacity: false)
             self.setNeedsDisplay()
         }
+        buttonAnimation(sender)
     }
     
-    func undoActive() {
+    func undoActive(sender:UIButton) {
         if (!self.selectIndexs.isEmpty) {
             self.deletedIndexs.append(self.selectIndexs.last!)
             self.selectIndexs.removeLast()
@@ -94,9 +105,10 @@ class LedPadView: UIView {
             self.setNeedsDisplay()
             fixEndPoint()
         }
+        buttonAnimation(sender)
     }
     
-    func redoActive() {
+    func redoActive(sender:UIButton) {
         if (!self.deletedIndexs.isEmpty) {
             self.selectIndexs.append(self.deletedIndexs.last!)
             self.deletedIndexs.removeLast()
@@ -105,9 +117,11 @@ class LedPadView: UIView {
             self.setNeedsDisplay()
             fixEndPoint()
         }
+        buttonAnimation(sender)
     }
     
-    func okActive() {
+    func okActive(sender:UIButton) {
+        buttonAnimation(sender)
     }
     
     func fixEndPoint () {
@@ -141,7 +155,7 @@ class LedPadView: UIView {
         }
         drawCircles()
         for i in 0..<self.drawPoints.count {
-            drawLines(self.drawPoints[i], color: UIColor.greenColor())
+            //drawLines(self.drawPoints[i], color: UIColor.greenColor())
         }
     }
     
@@ -253,7 +267,8 @@ class LedPadView: UIView {
     }
     
     override func touchesBegan(touches: Set<UITouch>, withEvent event: UIEvent?) {
-        //self.selectIndexs.removeAll(keepCapacity: false)
+        self.deletedIndexs.removeAll(keepCapacity: false)
+        self.deletedPoints.removeAll(keepCapacity: false)
         self.selectIndexs.append([Int]())
         self.fingerPoint = (touches.first?.locationInView(self))!
         self.drawPoints.append([CGPoint]())
