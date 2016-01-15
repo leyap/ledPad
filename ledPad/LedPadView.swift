@@ -10,14 +10,6 @@ import UIKit
 
 class LedPadView: UIView {
 
-    /*
-    // Only override drawRect: if you perform custom drawing.
-    // An empty implementation adversely affects performance during animation.
-    override func drawRect(rect: CGRect) {
-        // Drawing code
-    }
-    */
-    
     //当前触摸点
     var fingerPoint = CGPoint()
     //已划过的点集合
@@ -35,9 +27,9 @@ class LedPadView: UIView {
     //led的边长(一排的数量)
     var ledLength:Int = 12
     //靠边的距离
-    var sideWidth:CGFloat = 10
+    var sideWidth:CGFloat = 20
     //两个圆边与边的距离
-    var circleSideWidth:CGFloat = 10
+    var circleSideDistance:CGFloat = 5
     
     
     override init(frame: CGRect) {
@@ -45,13 +37,14 @@ class LedPadView: UIView {
         let screenW = UIScreen.mainScreen().bounds.width
         print("screenWidth = \(screenW)")
         self.backgroundColor = UIColor(red: 70/255, green: 80/255, blue: 60/255, alpha: 1)
-        centerDistance = (screenW-self.sideWidth*2.0)/CGFloat(self.ledLength)
-        circleRadius = (screenW-self.circleSideWidth*CGFloat(self.ledLength-1)-self.sideWidth*2.0) / CGFloat(self.ledLength*2)
+        circleRadius = (screenW-self.circleSideDistance*CGFloat(self.ledLength-1)-self.sideWidth*2.0) / CGFloat(self.ledLength*2)
+        centerDistance = (screenW-self.sideWidth*2.0 - circleRadius*2)/CGFloat(self.ledLength-1)
         firstPointX = sideWidth + circleRadius
         firstPointY = 140
         print("R = \(circleRadius)")
         fillPoints()
     }
+    
 
     required init?(coder aDecoder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
@@ -125,7 +118,7 @@ class LedPadView: UIView {
         //CGContextStrokePath(context)
         CGContextFillPath(context)
         CGContextSetLineWidth(context, 4.0)
-        CGContextAddArc(context, point.x, point.y, self.circleRadius, 0, CGFloat(M_PI*2), 1)
+        CGContextAddArc(context, point.x, point.y, self.circleRadius-2.0, 0, CGFloat(M_PI*2), 1)
         CGContextStrokePath(context)
     }
     
@@ -137,6 +130,13 @@ class LedPadView: UIView {
     
     func distance (p1:CGPoint, _ p2:CGPoint) -> CGFloat {
         return pow(pow(p1.x-p2.x, 2) + pow(p1.y-p2.y, 2), 0.5)
+    }
+    
+    func isInside (p:CGPoint, _ cp:CGPoint) -> Bool {
+        if p.x>(cp.x-self.circleRadius) && p.x<(cp.x+self.circleRadius) && p.y>(cp.y-self.circleRadius) && p.y<(cp.y+self.circleRadius) {
+           return true
+        }
+        return false
     }
     
     func contains(index:Int) -> Bool {
@@ -151,7 +151,8 @@ class LedPadView: UIView {
     func processPoint(point:CGPoint) {
         for i in 0..<self.points.count {
             if (!contains(i)) {
-                if distance(point, points[i]) <= circleRadius {
+                //if distance(point, points[i]) <= circleRadius {
+                if isInside(point, points[i]) {
                     self.selectIndexs.append(i)
                 }
             }
@@ -167,6 +168,9 @@ class LedPadView: UIView {
     
     override func touchesMoved(touches: Set<UITouch>, withEvent event: UIEvent?) {
         self.fingerPoint = (touches.first?.locationInView(self))!
+        let prePoint = (touches.first?.previousLocationInView(self))!
+        let midPoint = CGPoint(x: (self.fingerPoint.x-prePoint.x)/2.0, y: (self.fingerPoint.y-prePoint.y)/2.0)
+        processPoint(midPoint)
         processPoint(fingerPoint)
         self.setNeedsDisplay()
     }

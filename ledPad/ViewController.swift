@@ -13,7 +13,7 @@ class ViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         // Do any additional setup after loading the view, typically from a nib.
-        self.view = LedPadView(frame: CGRect(x: 0, y: 0, width: 300, height: 300))
+        self.view = LedPadView(frame: CGRect(x: 0, y: 0, width: 0, height: 0))
     }
 
     override func didReceiveMemoryWarning() {
