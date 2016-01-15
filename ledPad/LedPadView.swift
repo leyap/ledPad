@@ -65,10 +65,10 @@ class LedPadView: UIView {
         createButton("Undo", action: "undoActive:", frame:  CGRect(x: sideDistance + 90 + 10, y: self.firstPointY+sideLength, width: 90, height: 40))
         createButton("Redo", action: "redoActive:", frame:  CGRect(x: sideDistance + 90 * 2 + 10 * 2, y: self.firstPointY+sideLength, width: 90, height: 40))
         createButton("OK", action: "okActive:", frame:  CGRect(x: sideDistance + 90 * 3 + 10 * 3, y: self.firstPointY+sideLength, width: 70, height: 40))
-        switchButton = createButton("point", action: "valueChanged", frame:  CGRect(x: screenW/2-35.0, y: self.firstPointY+sideLength + 60, width: 70, height: 40))
+        switchButton = createButton("point", action: "valueChanged:", frame:  CGRect(x: screenW/2-35.0, y: self.firstPointY+sideLength + 60, width: 70, height: 40))
     }
     
-    func createButton(name:String, action: Selector, frame: CGRect) {
+    func createButton(name:String, action: Selector, frame: CGRect) -> UIButton {
         let button = UIButton(type: UIButtonType.Custom)
         button.frame = frame
         button.backgroundColor = backColor
@@ -79,6 +79,18 @@ class LedPadView: UIView {
         button.setTitleColor(buttonApplicationColor, forState: UIControlState.Highlighted)
         button.addTarget(self, action: action, forControlEvents: UIControlEvents.TouchUpInside)
         self.addSubview(button)
+        return button
+    }
+    
+    func valueChanged (sender:UIButton) {
+        if sender.titleLabel?.text == "point" {
+            sender.setTitle("line", forState: UIControlState.Normal)
+            drawState = false
+        } else {
+            sender.setTitle("point", forState: UIControlState.Normal)
+            drawState = true
+        }
+        self.setNeedsDisplay()
     }
     
     func buttonAnimation (button:UIButton) {
