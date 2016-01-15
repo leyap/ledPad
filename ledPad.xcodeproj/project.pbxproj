@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		A72E7FE71C4916000070EBEE /* icon.png in Resources */ = {isa = PBXBuildFile; fileRef = A72E7FE61C4916000070EBEE /* icon.png */; };
 		A77B32031C46523C00A22911 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = A77B32021C46523C00A22911 /* AppDelegate.swift */; };
 		A77B32051C46523C00A22911 /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = A77B32041C46523C00A22911 /* ViewController.swift */; };
 		A77B32081C46523C00A22911 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = A77B32061C46523C00A22911 /* Main.storyboard */; };
@@ -16,6 +17,7 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		A72E7FE61C4916000070EBEE /* icon.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = icon.png; sourceTree = "<group>"; };
 		A77B31FF1C46523C00A22911 /* ledPad.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = ledPad.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		A77B32021C46523C00A22911 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		A77B32041C46523C00A22911 /* ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewController.swift; sourceTree = "<group>"; };
@@ -60,6 +62,7 @@
 				A77B32041C46523C00A22911 /* ViewController.swift */,
 				A77B32141C46525A00A22911 /* LedPadView.swift */,
 				A77B32061C46523C00A22911 /* Main.storyboard */,
+				A72E7FE61C4916000070EBEE /* icon.png */,
 				A77B32091C46523C00A22911 /* Assets.xcassets */,
 				A77B320B1C46523C00A22911 /* LaunchScreen.storyboard */,
 				A77B320E1C46523C00A22911 /* Info.plist */,
@@ -125,6 +128,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				A72E7FE71C4916000070EBEE /* icon.png in Resources */,
 				A77B320D1C46523C00A22911 /* LaunchScreen.storyboard in Resources */,
 				A77B320A1C46523C00A22911 /* Assets.xcassets in Resources */,
 				A77B32081C46523C00A22911 /* Main.storyboard in Resources */,
@@ -290,6 +294,7 @@
 				A77B32131C46523C00A22911 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
 	};

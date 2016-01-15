@@ -9,13 +9,17 @@
 import UIKit
 
 class LedPadView: UIView {
-
+    
     //当前触摸点
     var fingerPoint = CGPoint()
     //所有点对象映射
     var points:[CGPoint] = [CGPoint]()
-    //
+    //绘制的点集/路径
     var drawPoints:[[CGPoint]] = [[CGPoint]]()
+    //删除的点集/路径
+    var deletedPoints:[[CGPoint]] = [[CGPoint]]()
+    //
+    var deletedIndexs:[[Int]] = [[Int]]()
     //已划过的点的下标
     var selectIndexs:[[Int]] = [[Int]]()
     //圆半径
@@ -29,40 +33,93 @@ class LedPadView: UIView {
     //led的边长(一排的数量)
     var ledLength:Int = 12
     //靠边的距离
-    var sideWidth:CGFloat = 10
+    var sideDistance:CGFloat = 10
     //两个圆边与边的距离
     var circleSideDistance:CGFloat = 10
+    //边长...
     var sideLength:CGFloat!
     
+    let backColor = UIColor(red: 40/255, green: 60/255, blue: 50/255, alpha: 1)
+    let buttonNornalColor = UIColor(red: 60/255, green: 90/255, blue: 70/255, alpha: 1)
+    let buttonApplicationColor = UIColor(red: 60/255, green: 90/255, blue: 70/255, alpha: 1)
+    let pointNornalColor = UIColor(red: 40/255, green: 60/255, blue: 50/255, alpha: 1)
+    let pointStrokeColor = UIColor(red: 40/255, green: 50/255, blue: 50/255, alpha: 1)
     
     override init(frame: CGRect) {
         super.init(frame: frame)
         let screenW = UIScreen.mainScreen().bounds.width
         print("screenWidth = \(screenW)")
         self.backgroundColor = UIColor(red: 70/255, green: 80/255, blue: 60/255, alpha: 1)
-        circleRadius = (screenW-self.circleSideDistance*CGFloat(self.ledLength-1)-self.sideWidth*2.0) / CGFloat(self.ledLength*2)
-        centerDistance = (screenW-self.sideWidth*2.0 - circleRadius*2)/CGFloat(self.ledLength-1)
-        sideLength = screenW-self.sideWidth*2
-        firstPointX = sideWidth + circleRadius
+        circleRadius = (screenW-self.circleSideDistance*CGFloat(self.ledLength-1)-self.sideDistance*2.0) / CGFloat(self.ledLength*2)
+        sideLength = screenW-self.sideDistance*2
+        centerDistance = (sideLength - circleRadius*2)/CGFloat(self.ledLength-1)
+        firstPointX = sideDistance + circleRadius
         firstPointY = 140
         print("R = \(circleRadius)")
         fillPoints()
-        
+        createButton("Clear", action: "clearActive", frame:  CGRect(x: sideDistance, y: self.firstPointY+sideLength, width: 90, height: 40))
+        createButton("Undo", action: "undoActive", frame:  CGRect(x: sideDistance + 90 + 10, y: self.firstPointY+sideLength, width: 90, height: 40))
+        createButton("Redo", action: "redoActive", frame:  CGRect(x: sideDistance + 90 * 2 + 10 * 2, y: self.firstPointY+sideLength, width: 90, height: 40))
+        createButton("OK", action: "okActive", frame:  CGRect(x: sideDistance + 90 * 3 + 10 * 3, y: self.firstPointY+sideLength, width: 70, height: 40))
+    }
+    
+    func createButton(name:String, action: Selector, frame: CGRect) {
         let clearButton = UIButton(type: UIButtonType.Custom)
-        clearButton.frame = CGRect(x: sideWidth, y: self.firstPointY+sideLength, width: 100, height: 40)
-        clearButton.backgroundColor = UIColor(red: 80/255, green: 90/255, blue: 40/255, alpha: 1)
-        clearButton.setTitle("clear", forState: UIControlState.Normal)
+        clearButton.frame = frame
+        clearButton.backgroundColor = backColor
+        clearButton.setTitle(name, forState: UIControlState.Normal)
         clearButton.titleLabel?.font = UIFont.systemFontOfSize(28)
-        clearButton.addTarget(self, action: "clearActive", forControlEvents: UIControlEvents.TouchUpInside)
+        clearButton.setTitleColor(buttonNornalColor, forState: UIControlState.Normal)
+        clearButton.setTitleColor(buttonApplicationColor, forState: UIControlState.Application)
+        clearButton.addTarget(self, action: action, forControlEvents: UIControlEvents.TouchUpInside)
         self.addSubview(clearButton)
     }
     
     func clearActive() {
-        self.selectIndexs.removeAll(keepCapacity: true)
-        self.drawPoints.removeAll(keepCapacity: true)
-        self.setNeedsDisplay()
+        if (!self.selectIndexs.isEmpty) {
+            self.selectIndexs.removeAll(keepCapacity: false)
+            self.drawPoints.removeAll(keepCapacity: false)
+            self.deletedIndexs.removeAll(keepCapacity: false)
+            self.deletedPoints.removeAll(keepCapacity: false)
+            self.setNeedsDisplay()
+        }
     }
-
+    
+    func undoActive() {
+        if (!self.selectIndexs.isEmpty) {
+            self.deletedIndexs.append(self.selectIndexs.last!)
+            self.selectIndexs.removeLast()
+            self.deletedPoints.append(self.drawPoints.last!)
+            self.drawPoints.removeLast()
+            self.setNeedsDisplay()
+            fixEndPoint()
+        }
+    }
+    
+    func redoActive() {
+        if (!self.deletedIndexs.isEmpty) {
+            self.selectIndexs.append(self.deletedIndexs.last!)
+            self.deletedIndexs.removeLast()
+            self.drawPoints.append(self.deletedPoints.last!)
+            self.deletedPoints.removeLast()
+            self.setNeedsDisplay()
+            fixEndPoint()
+        }
+    }
+    
+    func okActive() {
+    }
+    
+    func fixEndPoint () {
+        let lastIndex = self.selectIndexs.count-1
+        if lastIndex < 0 {
+            return
+        }
+        if let pointLast = self.selectIndexs[lastIndex].last {
+            self.fingerPoint = self.points[pointLast]
+        }
+    }
+    
     required init?(coder aDecoder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
@@ -79,9 +136,9 @@ class LedPadView: UIView {
         }
         
         let lastIndex = self.selectIndexs.count-1
-            if ( lastIndex >= 0 && self.selectIndexs[lastIndex].count > 0) {
-                drawLine(points[self.selectIndexs[lastIndex].last!], p2: self.fingerPoint)
-            }
+        if ( lastIndex >= 0 && self.selectIndexs[lastIndex].count > 0) {
+            drawLine(points[self.selectIndexs[lastIndex].last!], p2: self.fingerPoint)
+        }
         drawCircles()
         for i in 0..<self.drawPoints.count {
             drawLines(self.drawPoints[i], color: UIColor.greenColor())
@@ -102,6 +159,7 @@ class LedPadView: UIView {
         let bp = UIBezierPath()
         bp.lineWidth = 4
         bp.lineCapStyle = .Round
+        bp.lineJoinStyle = .Round
         bp.moveToPoint(p1)
         bp.addLineToPoint(p2)
         UIColor.redColor().setStroke()
@@ -115,6 +173,7 @@ class LedPadView: UIView {
         let bp = UIBezierPath()
         bp.lineWidth = 4
         bp.lineCapStyle = .Round
+        bp.lineJoinStyle = .Round
         //UIColor(red: 0.4, green: 0.5, blue: 0.4, alpha: 1).setStroke()
         color.setStroke()
         color.setFill()
@@ -134,8 +193,8 @@ class LedPadView: UIView {
             UIColor.redColor().setStroke()
             UIColor.yellowColor().setFill()
         } else {
-            UIColor(red: 40/255, green: 60/255, blue: 50/255, alpha: 1).setFill()
-            UIColor(red: 40/255, green: 50/255, blue: 50/255, alpha: 1).setStroke()
+            pointNornalColor.setFill()
+            pointStrokeColor.setStroke()
         }
         CGContextAddArc(context, point.x, point.y, self.circleRadius, 0, CGFloat(M_PI*2), 1)
         //CGContextStrokePath(context)
@@ -156,11 +215,12 @@ class LedPadView: UIView {
     }
     
     func isInside (p:CGPoint, _ cp:CGPoint) -> Bool {
-        if p.x>(cp.x-self.circleRadius)
-            && p.x<(cp.x+self.circleRadius)
-            && p.y>(cp.y-self.circleRadius)
-            && p.y<(cp.y+self.circleRadius) {
-           return true
+        let dist = self.centerDistance/2
+        if p.x>=(cp.x-dist)
+            && p.x<=(cp.x+dist)
+            && p.y>=(cp.y-dist)
+            && p.y<=(cp.y+dist) {
+                return true
         }
         return false
     }
@@ -176,13 +236,13 @@ class LedPadView: UIView {
         return false
     }
     
-        func processPoint(point:CGPoint) {
-            var lastIndex = self.selectIndexs.count-1
-            if lastIndex < 0 {
-                lastIndex = 0
-                self.selectIndexs.append([Int]())
-            }
-            for i in 0..<self.points.count {
+    func processPoint(point:CGPoint) {
+        var lastIndex = self.selectIndexs.count-1
+        if lastIndex < 0 {
+            lastIndex = 0
+            self.selectIndexs.append([Int]())
+        }
+        for i in 0..<self.points.count {
             if (!contains(i)) {
                 //if distance(point, points[i]) <= circleRadius {
                 if isInside(point, points[i]) {
