@@ -279,8 +279,8 @@ class LedPadView: UIView {
         }
         for i in 0..<self.points.count {
             if (!contains(i)) {
-                //if distance(point, points[i]) <= circleRadius {
-                if isInside(point, points[i]) {
+                if distance(point, points[i]) <= self.centerDistance/2.0 {
+                //if isInside(point, points[i]) {
                     self.selectIndexs[lastIndex].append(i)
                 }
             }
