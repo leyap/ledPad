@@ -14,9 +14,13 @@
 		A77B320A1C46523C00A22911 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = A77B32091C46523C00A22911 /* Assets.xcassets */; };
 		A77B320D1C46523C00A22911 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = A77B320B1C46523C00A22911 /* LaunchScreen.storyboard */; };
 		A77B32151C46525A00A22911 /* LedPadView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A77B32141C46525A00A22911 /* LedPadView.swift */; };
+		A795B3401C4CB64C00F0600A /* DFBle.swift in Sources */ = {isa = PBXBuildFile; fileRef = A795B33F1C4CB64C00F0600A /* DFBle.swift */; };
+		F9DFE95067B834057CBB3E67 /* Pods_ledPad.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F17E6FB936EFFB5E75A3A374 /* Pods_ledPad.framework */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		12B21DFA794B568466986EA9 /* Pods-ledPad.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-ledPad.release.xcconfig"; path = "Pods/Target Support Files/Pods-ledPad/Pods-ledPad.release.xcconfig"; sourceTree = "<group>"; };
+		4CF77CFDBE0F24AF322BC29F /* Pods-ledPad.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-ledPad.debug.xcconfig"; path = "Pods/Target Support Files/Pods-ledPad/Pods-ledPad.debug.xcconfig"; sourceTree = "<group>"; };
 		A72E7FE61C4916000070EBEE /* icon.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = icon.png; sourceTree = "<group>"; };
 		A77B31FF1C46523C00A22911 /* ledPad.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = ledPad.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		A77B32021C46523C00A22911 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
@@ -26,6 +30,8 @@
 		A77B320C1C46523C00A22911 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		A77B320E1C46523C00A22911 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		A77B32141C46525A00A22911 /* LedPadView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = LedPadView.swift; sourceTree = "<group>"; };
+		A795B33F1C4CB64C00F0600A /* DFBle.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DFBle.swift; sourceTree = "<group>"; };
+		F17E6FB936EFFB5E75A3A374 /* Pods_ledPad.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_ledPad.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -33,6 +39,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				F9DFE95067B834057CBB3E67 /* Pods_ledPad.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -44,6 +51,8 @@
 			children = (
 				A77B32011C46523C00A22911 /* ledPad */,
 				A77B32001C46523C00A22911 /* Products */,
+				FE3D16E304C6033CDFCC7FDA /* Pods */,
+				AB4997E3F73B461AC7258B6C /* Frameworks */,
 			);
 			sourceTree = "<group>";
 		};
@@ -60,6 +69,7 @@
 			children = (
 				A77B32021C46523C00A22911 /* AppDelegate.swift */,
 				A77B32041C46523C00A22911 /* ViewController.swift */,
+				A795B33F1C4CB64C00F0600A /* DFBle.swift */,
 				A77B32141C46525A00A22911 /* LedPadView.swift */,
 				A77B32061C46523C00A22911 /* Main.storyboard */,
 				A72E7FE61C4916000070EBEE /* icon.png */,
@@ -70,6 +80,23 @@
 			path = ledPad;
 			sourceTree = "<group>";
 		};
+		AB4997E3F73B461AC7258B6C /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				F17E6FB936EFFB5E75A3A374 /* Pods_ledPad.framework */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		FE3D16E304C6033CDFCC7FDA /* Pods */ = {
+			isa = PBXGroup;
+			children = (
+				4CF77CFDBE0F24AF322BC29F /* Pods-ledPad.debug.xcconfig */,
+				12B21DFA794B568466986EA9 /* Pods-ledPad.release.xcconfig */,
+			);
+			name = Pods;
+			sourceTree = "<group>";
+		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
@@ -77,9 +104,12 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = A77B32111C46523C00A22911 /* Build configuration list for PBXNativeTarget "ledPad" */;
 			buildPhases = (
+				AFD076442CC11E9AE39E40A7 /* Check Pods Manifest.lock */,
 				A77B31FB1C46523C00A22911 /* Sources */,
 				A77B31FC1C46523C00A22911 /* Frameworks */,
 				A77B31FD1C46523C00A22911 /* Resources */,
+				4091CC8AE6E78CCFAE96F428 /* Embed Pods Frameworks */,
+				30B034DCF333D85FD3AE2D2C /* Copy Pods Resources */,
 			);
 			buildRules = (
 			);
@@ -137,6 +167,54 @@
 		};
 /* End PBXResourcesBuildPhase section */
 
+/* Begin PBXShellScriptBuildPhase section */
+		30B034DCF333D85FD3AE2D2C /* Copy Pods Resources */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+			);
+			name = "Copy Pods Resources";
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${SRCROOT}/Pods/Target Support Files/Pods-ledPad/Pods-ledPad-resources.sh\"\n";
+			showEnvVarsInLog = 0;
+		};
+		4091CC8AE6E78CCFAE96F428 /* Embed Pods Frameworks */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+			);
+			name = "Embed Pods Frameworks";
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${SRCROOT}/Pods/Target Support Files/Pods-ledPad/Pods-ledPad-frameworks.sh\"\n";
+			showEnvVarsInLog = 0;
+		};
+		AFD076442CC11E9AE39E40A7 /* Check Pods Manifest.lock */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+			);
+			name = "Check Pods Manifest.lock";
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "diff \"${PODS_ROOT}/../Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [[ $? != 0 ]] ; then\n    cat << EOM\nerror: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\nEOM\n    exit 1\nfi\n";
+			showEnvVarsInLog = 0;
+		};
+/* End PBXShellScriptBuildPhase section */
+
 /* Begin PBXSourcesBuildPhase section */
 		A77B31FB1C46523C00A22911 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
@@ -145,6 +223,7 @@
 				A77B32051C46523C00A22911 /* ViewController.swift in Sources */,
 				A77B32031C46523C00A22911 /* AppDelegate.swift in Sources */,
 				A77B32151C46525A00A22911 /* LedPadView.swift in Sources */,
+				A795B3401C4CB64C00F0600A /* DFBle.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -255,6 +334,7 @@
 		};
 		A77B32121C46523C00A22911 /* Debug */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 4CF77CFDBE0F24AF322BC29F /* Pods-ledPad.debug.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				INFOPLIST_FILE = ledPad/Info.plist;
@@ -266,6 +346,7 @@
 		};
 		A77B32131C46523C00A22911 /* Release */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 12B21DFA794B568466986EA9 /* Pods-ledPad.release.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				INFOPLIST_FILE = ledPad/Info.plist;

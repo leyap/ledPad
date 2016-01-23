@@ -7,6 +7,21 @@
 //
 
 import UIKit
+import PureJsonSerializer
+
+class Point:NSObject, NSCoding {
+    var x:CGFloat = 0.0
+    var y:CGFloat = 0.0
+    func encodeWithCoder(aCoder: NSCoder) {
+        aCoder.encodeObject([x, y])
+    }
+    
+    required init?(coder aDecoder: NSCoder) {
+        let p:[CGFloat] = aDecoder.decodeObject() as! [CGFloat]
+        self.x = p[0]
+        self.y = p[1]
+    }
+}
 
 class LedPadView: UIView {
     
@@ -16,6 +31,8 @@ class LedPadView: UIView {
     var points:[CGPoint] = [CGPoint]()
     //绘制的点集/路径
     var drawPoints:[[CGPoint]] = [[CGPoint]]()
+    //
+    var pointData:[[[Int]]] = [[[Int]]]()
     //删除的点集/路径
     var deletedPoints:[[CGPoint]] = [[CGPoint]]()
     //
@@ -33,16 +50,19 @@ class LedPadView: UIView {
     //led的边长(一排的数量)
     var ledLength:Int = 12
     //靠边的距离
-    var sideDistance:CGFloat = 10
+    var sideDistance:CGFloat = 40
     //两个圆边与边的距离
-    var circleSideDistance:CGFloat = 10
+    var circleSideDistance:CGFloat = 40
     //边长...
     var sideLength:CGFloat!
+    
+    let homeDir = NSHomeDirectory()
+    var docPath:String!
     
     let backColor = UIColor(red: 40/255, green: 60/255, blue: 50/255, alpha: 1)
     let buttonNornalColor = UIColor(red: 60/255, green: 90/255, blue: 70/255, alpha: 1)
     let buttonApplicationColor = UIColor(red: 60/255, green: 190/255, blue: 70/255, alpha: 1)
-    let pointNornalColor = UIColor(red: 40/255, green: 60/255, blue: 50/255, alpha: 1)
+    let pointNormalColor = UIColor(red: 40/255, green: 60/255, blue: 50/255, alpha: 1)
     let pointStrokeColor = UIColor(red: 40/255, green: 50/255, blue: 50/255, alpha: 1)
     
     override init(frame: CGRect) {
@@ -57,10 +77,76 @@ class LedPadView: UIView {
         firstPointY = 140
         print("R = \(circleRadius)")
         fillPoints()
-        createButton("Clear", action: "clearActive:", frame:  CGRect(x: sideDistance, y: self.firstPointY+sideLength, width: 90, height: 40))
-        createButton("Undo", action: "undoActive:", frame:  CGRect(x: sideDistance + 90 + 10, y: self.firstPointY+sideLength, width: 90, height: 40))
-        createButton("Redo", action: "redoActive:", frame:  CGRect(x: sideDistance + 90 * 2 + 10 * 2, y: self.firstPointY+sideLength, width: 90, height: 40))
-        createButton("OK", action: "okActive:", frame:  CGRect(x: sideDistance + 90 * 3 + 10 * 3, y: self.firstPointY+sideLength, width: 70, height: 40))
+        createButton("Clear", action: "clearActive:", frame:  CGRect(x: sideDistance, y: self.firstPointY+sideLength + 40, width: 70, height: 40))
+        createButton("Undo", action: "undoActive:", frame:  CGRect(x: sideDistance + 70 + 10, y: self.firstPointY+sideLength + 40, width: 70, height: 40))
+        createButton("Redo", action: "redoActive:", frame:  CGRect(x: sideDistance + 70 * 2 + 10 * 2, y: self.firstPointY+sideLength + 40, width: 70, height: 40))
+        createButton("OK", action: "okActive:", frame:  CGRect(x: sideDistance + 70 * 3 + 10 * 3, y: self.firstPointY+sideLength + 40, width: 50, height: 40))
+        createButton("Load", action: "loadActive:", frame:  CGRect(x: sideDistance + 70 * 3 + 10 * 3, y: self.firstPointY+sideLength + 40 + 60, width: 70, height: 40))
+        
+       let docPaths = NSSearchPathForDirectoriesInDomains(NSSearchPathDirectory.DocumentDirectory, NSSearchPathDomainMask.UserDomainMask, true)
+        docPath = docPaths[0]+"/ledData.json"
+        //docPath = NSHomeDirectory()+"/Documents"
+        print(docPath)
+        var d :Dictionary = Dictionary<Int, [CGPoint]>()
+        for (var i=0; i<self.drawPoints.count; i++) {
+            d[i] = self.drawPoints[i]
+        }
+        
+        loadData()
+    }
+    
+    func saveData() {
+        print(selectIndexs)
+        print(pointData)
+        var jsonData = Array<AnyObject> ()
+        for i in 0..<pointData.count {
+            var p = [[Int]]()
+            var data = Dictionary<String, AnyObject> ()
+            data["name"] = "led\(i)"
+            data["uuid"] = i
+            for j in 0..<pointData[i].count {
+                p.append([Int]())
+                for k in 0..<pointData[i][j].count {
+                    let d1 = pointData[i][j][k]
+                    p[j].append(d1)
+                }
+            }
+            data["data"] = p
+            jsonData.append(data)
+        }
+        print(jsonData)
+        
+        guard let data = try? NSJSONSerialization.dataWithJSONObject(jsonData, options: NSJSONWritingOptions()) else {
+           return
+        }
+        data.writeToFile(docPath, atomically: true)
+        
+    }
+    
+    func loadData() {
+        let data = NSData(contentsOfFile: docPath)
+        var jsonData:AnyObject?
+        do {
+            jsonData = try NSJSONSerialization.JSONObjectWithData(data!, options: NSJSONReadingOptions.MutableContainers)
+            self.setNeedsDisplay()
+        } catch let error as NSError {
+            print(error)
+            return
+        }
+        
+        let jsonArray = jsonData as! NSArray
+        pointData = [[[Int]]]()
+        for i in 0..<jsonArray.count {
+            var dic = jsonArray[i] as! Dictionary<String, AnyObject>
+            pointData.append(dic["data"] as! [[Int]])
+        }
+    }
+    
+    func randomLoad () {
+        let randomIndex = arc4random_uniform(UInt32(pointData.count))
+        selectIndexs = pointData[Int(randomIndex)]
+        fixEndPoint()
+        self.setNeedsDisplay()
     }
     
     func createButton(name:String, action: Selector, frame: CGRect) {
@@ -81,7 +167,7 @@ class LedPadView: UIView {
         UIButton.animateWithDuration(0.1, animations: { () -> Void in
             button.backgroundColor = UIColor(red: 0, green: 0, blue: 0, alpha: 0)
             }) { (finish) -> Void in
-            button.backgroundColor = self.backColor
+                button.backgroundColor = self.backColor
         }
     }
     
@@ -121,6 +207,15 @@ class LedPadView: UIView {
     }
     
     func okActive(sender:UIButton) {
+        print("in okActive")
+        pointData.append(self.selectIndexs)
+        saveData()
+        buttonAnimation(sender)
+    }
+    
+    func loadActive (sender:UIButton) {
+        print("in loadActive")
+        randomLoad()
         buttonAnimation(sender)
     }
     
@@ -154,9 +249,6 @@ class LedPadView: UIView {
             drawLine(points[self.selectIndexs[lastIndex].last!], p2: self.fingerPoint)
         }
         drawCircles()
-        for i in 0..<self.drawPoints.count {
-            //drawLines(self.drawPoints[i], color: UIColor.greenColor())
-        }
     }
     
     func fillPoints () {
@@ -207,7 +299,7 @@ class LedPadView: UIView {
             UIColor.redColor().setStroke()
             UIColor.yellowColor().setFill()
         } else {
-            pointNornalColor.setFill()
+            pointNormalColor.setFill()
             pointStrokeColor.setStroke()
         }
         CGContextAddArc(context, point.x, point.y, self.circleRadius, 0, CGFloat(M_PI*2), 1)
@@ -258,8 +350,8 @@ class LedPadView: UIView {
         }
         for i in 0..<self.points.count {
             if (!contains(i)) {
-                //if distance(point, points[i]) <= circleRadius {
-                if isInside(point, points[i]) {
+                //if isInside(point, points[i]) {
+                if distance(point, points[i]) < self.centerDistance/2 {
                     self.selectIndexs[lastIndex].append(i)
                 }
             }
@@ -287,9 +379,9 @@ class LedPadView: UIView {
     }
     
     override func touchesEnded(touches: Set<UITouch>, withEvent event: UIEvent?) {
-        let touchPoint = (touches.first?.locationInView(self))!
-        let lastIndex = self.drawPoints.count-1
-        self.drawPoints[lastIndex].append(touchPoint)
+        //let touchPoint = (touches.first?.locationInView(self))!
+        //let lastIndex = self.drawPoints.count-1
+        //self.drawPoints[lastIndex].append(touchPoint)
         let lastIndex1 = self.selectIndexs.count-1
         if let pointLast = self.selectIndexs[lastIndex1].last {
             self.fingerPoint = self.points[pointLast]
@@ -298,6 +390,10 @@ class LedPadView: UIView {
     }
     
     override func touchesCancelled(touches: Set<UITouch>?, withEvent event: UIEvent?) {
+        self.fingerPoint = (touches!.first?.locationInView(self))!
+        let lastIndex = self.drawPoints.count-1
+        self.drawPoints[lastIndex].append(fingerPoint)
+        processPoint(fingerPoint)
+        self.setNeedsDisplay()
     }
-    
 }
