@@ -57,6 +57,7 @@ class LedPadView: UIView {
         circleRadius = 5
         sideLength = screenW-self.sideDistance*2
         centerDistance = (sideLength - circleRadius*2)/CGFloat(self.ledLength-1)
+        self.lastPointRadius = self.centerDistance/2
         firstPointX = sideDistance + circleRadius
         firstPointY = 140
         print("R = \(circleRadius)")
@@ -71,6 +72,8 @@ class LedPadView: UIView {
         docPath = docPaths[0]+"/ledData.json"
         //docPath = NSHomeDirectory()+"/Documents"
         print(docPath)
+        //let data = NSData()
+        //data.writeToFile(docPath, atomically: true)
         loadData()
     }
     
@@ -103,14 +106,18 @@ class LedPadView: UIView {
     }
     
     func loadData() {
+        if !NSFileManager().fileExistsAtPath(docPath) {
+            print("erro no file")
+            return
+        }
         let data = NSData(contentsOfFile: docPath)
         if data == nil {
+            print("erro data is nil")
             return
         }
         var jsonData:AnyObject?
         do {
             jsonData = try NSJSONSerialization.JSONObjectWithData(data!, options: NSJSONReadingOptions.MutableContainers)
-            self.setNeedsDisplay()
         } catch let error as NSError {
             print(error)
             return
@@ -118,6 +125,7 @@ class LedPadView: UIView {
         
         let jsonArray = jsonData as! NSArray
         pointData = [[[Int]]]()
+        print("number = \(jsonArray.count)")
         for i in 0..<jsonArray.count {
             var dic = jsonArray[i] as! Dictionary<String, AnyObject>
             pointData.append(dic["data"] as! [[Int]])
@@ -125,7 +133,10 @@ class LedPadView: UIView {
     }
     
     func randomLoad () {
-        let randomIndex = arc4random_uniform(UInt32(pointData.count))
+        if pointData.count == 0 {
+            return
+        }
+        let randomIndex = arc4random_uniform(UInt32(pointData.count-1))
         selectIndexs = pointData[Int(randomIndex)]
         fixEndPoint()
         self.setNeedsDisplay()
@@ -184,8 +195,15 @@ class LedPadView: UIView {
     
     func okActive(sender:UIButton) {
         print("in okActive")
+        if selectIndexs.count == 0 {
+            print("error no data for save")
+            return
+        }
         pointData.append(self.selectIndexs)
         saveData()
+        self.selectIndexs.removeAll(keepCapacity: false)
+        self.deletedIndexs.removeAll(keepCapacity: false)
+        self.setNeedsDisplay()
         buttonAnimation(sender)
     }
     
@@ -222,7 +240,7 @@ class LedPadView: UIView {
         
         let lastIndex = self.selectIndexs.count-1
         if ( lastIndex >= 0 && self.selectIndexs[lastIndex].count > 0) {
-            if (lastSelectPoint != nil) {
+            if (lastSelectPoint != nil && lastSelectPoint >= 0) {
                 drawLine(points[self.selectIndexs[lastIndex].last!], p2: points[self.lastSelectPoint!])
                 let point = self.points[lastSelectPoint!]
                 let context = UIGraphicsGetCurrentContext()
