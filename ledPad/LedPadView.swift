@@ -10,10 +10,8 @@ import UIKit
 
 class LedPadView: UIView {
     
-    //当前触摸点
-    var fingerPoint = CGPoint()
     //
-    var fingerSelectPoint:Int?
+    var lastSelectPoint:Int?
     var isGetPoint:Bool = false
     //所有点对象映射
     var points:[CGPoint] = [CGPoint]()
@@ -34,7 +32,7 @@ class LedPadView: UIView {
     //led的边长(一排的数量)
     var ledLength:Int = 12
     //靠边的距离
-    var sideDistance:CGFloat = 40
+    var sideDistance:CGFloat = 20
     //两个圆边与边的距离
     var circleSideDistance:CGFloat = 40
     //边长...
@@ -42,6 +40,7 @@ class LedPadView: UIView {
     
     let homeDir = NSHomeDirectory()
     var docPath:String!
+    var lastPointRadius:CGFloat!
     
     let backColor = UIColor(red: 40/255, green: 60/255, blue: 50/255, alpha: 1)
     let buttonNornalColor = UIColor(red: 60/255, green: 90/255, blue: 70/255, alpha: 1)
@@ -55,6 +54,7 @@ class LedPadView: UIView {
         print("screenWidth = \(screenW)")
         self.backgroundColor = UIColor(red: 70/255, green: 80/255, blue: 60/255, alpha: 1)
         circleRadius = (screenW-self.circleSideDistance*CGFloat(self.ledLength-1)-self.sideDistance*2.0) / CGFloat(self.ledLength*2)
+        circleRadius = 5
         sideLength = screenW-self.sideDistance*2
         centerDistance = (sideLength - circleRadius*2)/CGFloat(self.ledLength-1)
         firstPointX = sideDistance + circleRadius
@@ -71,8 +71,6 @@ class LedPadView: UIView {
         docPath = docPaths[0]+"/ledData.json"
         //docPath = NSHomeDirectory()+"/Documents"
         print(docPath)
-        //var d :Dictionary = Dictionary<Int, [CGPoint]>()
-        
         loadData()
     }
     
@@ -203,8 +201,7 @@ class LedPadView: UIView {
             return
         }
         if let pointLast = self.selectIndexs[lastIndex].last {
-            self.fingerSelectPoint = pointLast
-            //self.fingerPoint = self.points[pointLast]
+            self.lastSelectPoint = pointLast
         }
     }
     
@@ -225,8 +222,14 @@ class LedPadView: UIView {
         
         let lastIndex = self.selectIndexs.count-1
         if ( lastIndex >= 0 && self.selectIndexs[lastIndex].count > 0) {
-            if (fingerSelectPoint != nil) {
-                drawLine(points[self.selectIndexs[lastIndex].last!], p2: points[self.fingerSelectPoint!])
+            if (lastSelectPoint != nil) {
+                drawLine(points[self.selectIndexs[lastIndex].last!], p2: points[self.lastSelectPoint!])
+                let point = self.points[lastSelectPoint!]
+                let context = UIGraphicsGetCurrentContext()
+                UIColor.redColor().setStroke()
+                CGContextSetLineWidth(context, 2.0)
+                CGContextAddArc(context, point.x, point.y, +self.lastPointRadius, 0, CGFloat(M_PI*2), 1)
+                CGContextStrokePath(context)
             }
         }
         drawCircles()
@@ -249,7 +252,7 @@ class LedPadView: UIView {
         bp.lineJoinStyle = .Round
         bp.moveToPoint(p1)
         bp.addLineToPoint(p2)
-        UIColor.redColor().setStroke()
+        UIColor.greenColor().setStroke()
         bp.stroke()
     }
     
@@ -332,15 +335,15 @@ class LedPadView: UIView {
         for i in 0..<self.points.count {
             //if isInside(point, points[i])
             if distance(point, points[i]) < self.centerDistance/2 {
-                print("i=\(i), f=\(fingerSelectPoint)")
-                if self.fingerSelectPoint != nil && self.fingerSelectPoint == i {
+                print("i=\(i), f=\(lastSelectPoint)")
+                if self.lastSelectPoint != nil && self.lastSelectPoint == i {
                     isGetPoint = true
-                    self.fingerSelectPoint = i
+                    self.lastSelectPoint = i
                 } else {
                     if (!contains(i)) {
                         self.selectIndexs.append([Int]())
                         self.selectIndexs[lastIndex+1].append(i)
-                        self.fingerSelectPoint = i
+                        self.lastSelectPoint = i
                         isGetPoint = true
                     }
                 }
@@ -357,7 +360,7 @@ class LedPadView: UIView {
         for i in 0..<self.points.count {
             if (!contains(i)) {
                 if distance(point, points[i]) < self.centerDistance/2 {
-                    self.fingerSelectPoint = i
+                    self.lastSelectPoint = i
                 }
             }
         }
@@ -372,12 +375,12 @@ class LedPadView: UIView {
         for i in 0..<self.points.count {
             if (!contains(i)) {
                 if distance(point, points[i]) < self.centerDistance/2 {
-                    self.fingerSelectPoint = i
+                    self.lastSelectPoint = i
                 }
             }
         }
-        if self.fingerSelectPoint != nil {
-            self.selectIndexs[lastIndex].append(self.fingerSelectPoint!)
+        if self.lastSelectPoint != nil {
+            self.selectIndexs[lastIndex].append(self.lastSelectPoint!)
         }
     }
     
@@ -385,14 +388,14 @@ class LedPadView: UIView {
     
     override func touchesBegan(touches: Set<UITouch>, withEvent event: UIEvent?) {
         self.deletedIndexs.removeAll(keepCapacity: false)
-        //self.selectIndexs.append([Int]())
-        self.fingerPoint = (touches.first?.locationInView(self))!
+        let fingerPoint = (touches.first?.locationInView(self))!
         processBegin(fingerPoint)
+        self.lastPointRadius = self.centerDistance
         self.setNeedsDisplay()
     }
     
     override func touchesMoved(touches: Set<UITouch>, withEvent event: UIEvent?) {
-        self.fingerPoint = (touches.first?.locationInView(self))!
+        let fingerPoint = (touches.first?.locationInView(self))!
         if isGetPoint {
             processMove(fingerPoint)
         } else {
@@ -402,20 +405,14 @@ class LedPadView: UIView {
     }
     
     override func touchesEnded(touches: Set<UITouch>, withEvent event: UIEvent?) {
-        let touchPoint = (touches.first?.locationInView(self))!
-        processEnd(touchPoint)
-        //self.fingerSelectPoint = nil
+        let fingerPoint = (touches.first?.locationInView(self))!
+        processEnd(fingerPoint)
         isGetPoint = false
-        let lastIndex1 = self.selectIndexs.count-1
-        if let pointLast = self.selectIndexs[lastIndex1].last {
-            self.fingerPoint = self.points[pointLast]
-        }
+        self.lastPointRadius = self.centerDistance/2
         self.setNeedsDisplay()
     }
     
     override func touchesCancelled(touches: Set<UITouch>?, withEvent event: UIEvent?) {
-        self.fingerPoint = (touches!.first?.locationInView(self))!
-        //processPoint(fingerPoint)
         self.setNeedsDisplay()
     }
 }
