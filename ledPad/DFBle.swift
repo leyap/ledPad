@@ -159,10 +159,25 @@ public class DFBle:NSObject, CBCentralManagerDelegate, CBPeripheralDelegate {
         sendString(cmdString)
     }
 
-    func sendMatrix () {
-        let a :UInt8 = 0x01;
-        let b :UInt8 = 0x02;
-        let d:UInt8 = a<<4 | (b & 0xF) ;
+    func sendMatrix (dataBuffer:[[Int]]) {
+        /*
+        let bufferMaxLength = 200
+        let frameDataMax = 128
+        let checksumInit:UInt8 = 0xAA
+        let frameStartData:UInt8 = 0x5A
+        var dataFrame:[UInt8] = [UInt8]()
+        
+        for i in 0..<data.count {
+            for j in 0..<data[i].count {
+                
+            }
+        }
+        */
+        
+        
+        let x :UInt8 = 0x01;
+        let y :UInt8 = 0x02;
+        let d:UInt8 = y<<4 | (x & 0xF) ;
         print(d);
     }
 

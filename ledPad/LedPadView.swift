@@ -7,34 +7,18 @@
 //
 
 import UIKit
-import PureJsonSerializer
-
-class Point:NSObject, NSCoding {
-    var x:CGFloat = 0.0
-    var y:CGFloat = 0.0
-    func encodeWithCoder(aCoder: NSCoder) {
-        aCoder.encodeObject([x, y])
-    }
-    
-    required init?(coder aDecoder: NSCoder) {
-        let p:[CGFloat] = aDecoder.decodeObject() as! [CGFloat]
-        self.x = p[0]
-        self.y = p[1]
-    }
-}
 
 class LedPadView: UIView {
     
     //当前触摸点
     var fingerPoint = CGPoint()
+    //
+    var fingerSelectPoint:Int?
+    var isGetPoint:Bool = false
     //所有点对象映射
     var points:[CGPoint] = [CGPoint]()
-    //绘制的点集/路径
-    var drawPoints:[[CGPoint]] = [[CGPoint]]()
     //
     var pointData:[[[Int]]] = [[[Int]]]()
-    //删除的点集/路径
-    var deletedPoints:[[CGPoint]] = [[CGPoint]]()
     //
     var deletedIndexs:[[Int]] = [[Int]]()
     //已划过的点的下标
@@ -87,10 +71,7 @@ class LedPadView: UIView {
         docPath = docPaths[0]+"/ledData.json"
         //docPath = NSHomeDirectory()+"/Documents"
         print(docPath)
-        var d :Dictionary = Dictionary<Int, [CGPoint]>()
-        for (var i=0; i<self.drawPoints.count; i++) {
-            d[i] = self.drawPoints[i]
-        }
+        //var d :Dictionary = Dictionary<Int, [CGPoint]>()
         
         loadData()
     }
@@ -125,6 +106,9 @@ class LedPadView: UIView {
     
     func loadData() {
         let data = NSData(contentsOfFile: docPath)
+        if data == nil {
+            return
+        }
         var jsonData:AnyObject?
         do {
             jsonData = try NSJSONSerialization.JSONObjectWithData(data!, options: NSJSONReadingOptions.MutableContainers)
@@ -174,9 +158,7 @@ class LedPadView: UIView {
     func clearActive(sender:UIButton) {
         if (!self.selectIndexs.isEmpty) {
             self.selectIndexs.removeAll(keepCapacity: false)
-            self.drawPoints.removeAll(keepCapacity: false)
             self.deletedIndexs.removeAll(keepCapacity: false)
-            self.deletedPoints.removeAll(keepCapacity: false)
             self.setNeedsDisplay()
         }
         buttonAnimation(sender)
@@ -186,8 +168,6 @@ class LedPadView: UIView {
         if (!self.selectIndexs.isEmpty) {
             self.deletedIndexs.append(self.selectIndexs.last!)
             self.selectIndexs.removeLast()
-            self.deletedPoints.append(self.drawPoints.last!)
-            self.drawPoints.removeLast()
             self.setNeedsDisplay()
             fixEndPoint()
         }
@@ -198,8 +178,6 @@ class LedPadView: UIView {
         if (!self.deletedIndexs.isEmpty) {
             self.selectIndexs.append(self.deletedIndexs.last!)
             self.deletedIndexs.removeLast()
-            self.drawPoints.append(self.deletedPoints.last!)
-            self.deletedPoints.removeLast()
             self.setNeedsDisplay()
             fixEndPoint()
         }
@@ -225,7 +203,8 @@ class LedPadView: UIView {
             return
         }
         if let pointLast = self.selectIndexs[lastIndex].last {
-            self.fingerPoint = self.points[pointLast]
+            self.fingerSelectPoint = pointLast
+            //self.fingerPoint = self.points[pointLast]
         }
     }
     
@@ -246,7 +225,9 @@ class LedPadView: UIView {
         
         let lastIndex = self.selectIndexs.count-1
         if ( lastIndex >= 0 && self.selectIndexs[lastIndex].count > 0) {
-            drawLine(points[self.selectIndexs[lastIndex].last!], p2: self.fingerPoint)
+            if (fingerSelectPoint != nil) {
+                drawLine(points[self.selectIndexs[lastIndex].last!], p2: points[self.fingerSelectPoint!])
+            }
         }
         drawCircles()
     }
@@ -342,7 +323,32 @@ class LedPadView: UIView {
         return false
     }
     
-    func processPoint(point:CGPoint) {
+    func processBegin(point:CGPoint) {
+        var lastIndex = self.selectIndexs.count-1
+        if lastIndex < 0 {
+            lastIndex = 0
+            self.selectIndexs.append([Int]())
+        }
+        for i in 0..<self.points.count {
+            //if isInside(point, points[i])
+            if distance(point, points[i]) < self.centerDistance/2 {
+                print("i=\(i), f=\(fingerSelectPoint)")
+                if self.fingerSelectPoint != nil && self.fingerSelectPoint == i {
+                    isGetPoint = true
+                    self.fingerSelectPoint = i
+                } else {
+                    if (!contains(i)) {
+                        self.selectIndexs.append([Int]())
+                        self.selectIndexs[lastIndex+1].append(i)
+                        self.fingerSelectPoint = i
+                        isGetPoint = true
+                    }
+                }
+            }
+        }
+    }
+    
+    func processMove(point:CGPoint) {
         var lastIndex = self.selectIndexs.count-1
         if lastIndex < 0 {
             lastIndex = 0
@@ -350,38 +356,56 @@ class LedPadView: UIView {
         }
         for i in 0..<self.points.count {
             if (!contains(i)) {
-                //if isInside(point, points[i]) {
                 if distance(point, points[i]) < self.centerDistance/2 {
-                    self.selectIndexs[lastIndex].append(i)
+                    self.fingerSelectPoint = i
                 }
             }
         }
     }
     
+    func processEnd(point:CGPoint) {
+        var lastIndex = self.selectIndexs.count-1
+        if lastIndex < 0 {
+            lastIndex = 0
+            self.selectIndexs.append([Int]())
+        }
+        for i in 0..<self.points.count {
+            if (!contains(i)) {
+                if distance(point, points[i]) < self.centerDistance/2 {
+                    self.fingerSelectPoint = i
+                }
+            }
+        }
+        if self.fingerSelectPoint != nil {
+            self.selectIndexs[lastIndex].append(self.fingerSelectPoint!)
+        }
+    }
+    
+    
+    
     override func touchesBegan(touches: Set<UITouch>, withEvent event: UIEvent?) {
         self.deletedIndexs.removeAll(keepCapacity: false)
-        self.deletedPoints.removeAll(keepCapacity: false)
-        self.selectIndexs.append([Int]())
+        //self.selectIndexs.append([Int]())
         self.fingerPoint = (touches.first?.locationInView(self))!
-        self.drawPoints.append([CGPoint]())
-        let lastIndex = self.drawPoints.count-1
-        self.drawPoints[lastIndex].append(fingerPoint)
-        processPoint(fingerPoint)
+        processBegin(fingerPoint)
         self.setNeedsDisplay()
     }
     
     override func touchesMoved(touches: Set<UITouch>, withEvent event: UIEvent?) {
         self.fingerPoint = (touches.first?.locationInView(self))!
-        let lastIndex = self.drawPoints.count-1
-        self.drawPoints[lastIndex].append(fingerPoint)
-        processPoint(fingerPoint)
+        if isGetPoint {
+            processMove(fingerPoint)
+        } else {
+            processBegin(fingerPoint)
+        }
         self.setNeedsDisplay()
     }
     
     override func touchesEnded(touches: Set<UITouch>, withEvent event: UIEvent?) {
-        //let touchPoint = (touches.first?.locationInView(self))!
-        //let lastIndex = self.drawPoints.count-1
-        //self.drawPoints[lastIndex].append(touchPoint)
+        let touchPoint = (touches.first?.locationInView(self))!
+        processEnd(touchPoint)
+        //self.fingerSelectPoint = nil
+        isGetPoint = false
         let lastIndex1 = self.selectIndexs.count-1
         if let pointLast = self.selectIndexs[lastIndex1].last {
             self.fingerPoint = self.points[pointLast]
@@ -391,9 +415,7 @@ class LedPadView: UIView {
     
     override func touchesCancelled(touches: Set<UITouch>?, withEvent event: UIEvent?) {
         self.fingerPoint = (touches!.first?.locationInView(self))!
-        let lastIndex = self.drawPoints.count-1
-        self.drawPoints[lastIndex].append(fingerPoint)
-        processPoint(fingerPoint)
+        //processPoint(fingerPoint)
         self.setNeedsDisplay()
     }
 }
