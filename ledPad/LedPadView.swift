@@ -168,6 +168,7 @@ class LedPadView: UIView {
         if (!self.selectIndexs.isEmpty) {
             self.selectIndexs.removeAll(keepCapacity: false)
             self.deletedIndexs.removeAll(keepCapacity: false)
+            self.lastSelectPoint = nil
             self.setNeedsDisplay()
         }
         buttonAnimation(sender)
@@ -177,6 +178,7 @@ class LedPadView: UIView {
         if (!self.selectIndexs.isEmpty) {
             self.deletedIndexs.append(self.selectIndexs.last!)
             self.selectIndexs.removeLast()
+            self.lastSelectPoint = nil
             self.setNeedsDisplay()
             fixEndPoint()
         }
