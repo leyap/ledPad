@@ -386,6 +386,10 @@ class LedPadView: UIView {
         }
     }
     
+    func getSlope(p1:CGPoint, p2:CGPoint) -> CGFloat {
+        return (p2.y-p1.y) / (p2.x-p1.x)
+    }
+    
     func processEnd(point:CGPoint) {
         var lastIndex = self.selectIndexs.count-1
         if lastIndex < 0 {
@@ -400,7 +404,21 @@ class LedPadView: UIView {
             }
         }
         if self.lastSelectPoint != nil {
-            self.selectIndexs[lastIndex].append(self.lastSelectPoint!)
+            let lastIndex1 = self.selectIndexs[lastIndex].count
+            if (lastIndex1 >= 2) {
+                let p1 = self.points[selectIndexs[lastIndex][lastIndex1-2]]
+                let p2 = self.points[selectIndexs[lastIndex][lastIndex1-1]]
+                let p3 = self.points[self.lastSelectPoint!]
+                print(getSlope(p1, p2: p2))
+                print(getSlope(p2, p2: p3))
+                if fabs(getSlope(p1, p2: p2) - getSlope(p2, p2: p3)) < 0.3 {
+                    self.selectIndexs[lastIndex][lastIndex1-1] = self.lastSelectPoint!
+                } else {
+                    self.selectIndexs[lastIndex].append(self.lastSelectPoint!)
+                }
+            } else {
+                self.selectIndexs[lastIndex].append(self.lastSelectPoint!)
+            }
         }
     }
     
