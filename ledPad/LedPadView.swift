@@ -360,12 +360,12 @@ class LedPadView: UIView {
                     isGetPoint = true
                     self.lastSelectPoint = i
                 } else {
-                    if (!contains(i)) {
+                    //if (!contains(i)) {
                         self.selectIndexs.append([Int]())
                         self.selectIndexs[lastIndex+1].append(i)
                         self.lastSelectPoint = i
                         isGetPoint = true
-                    }
+                    //}
                 }
             }
         }
@@ -378,15 +378,18 @@ class LedPadView: UIView {
             self.selectIndexs.append([Int]())
         }
         for i in 0..<self.points.count {
-            if (!contains(i)) {
+            //if (!contains(i)) {
                 if distance(point, points[i]) < self.centerDistance/2 {
                     self.lastSelectPoint = i
                 }
-            }
+            //}
         }
     }
     
     func getSlope(p1:CGPoint, p2:CGPoint) -> CGFloat {
+        // if p1.x == p2.x {
+        //     return 1
+        // }
         return (p2.y-p1.y) / (p2.x-p1.x)
     }
     
@@ -397,11 +400,11 @@ class LedPadView: UIView {
             self.selectIndexs.append([Int]())
         }
         for i in 0..<self.points.count {
-            if (!contains(i)) {
+            //if (!contains(i)) {
                 if distance(point, points[i]) < self.centerDistance/2 {
                     self.lastSelectPoint = i
                 }
-            }
+            //}
         }
         if self.lastSelectPoint != nil {
             let lastIndex1 = self.selectIndexs[lastIndex].count
@@ -411,7 +414,9 @@ class LedPadView: UIView {
                 let p3 = self.points[self.lastSelectPoint!]
                 print(getSlope(p1, p2: p2))
                 print(getSlope(p2, p2: p3))
-                if fabs(getSlope(p1, p2: p2) - getSlope(p2, p2: p3)) < 0.3 {
+                let slope1 = getSlope(p1, p2: p2)
+                let slope2 = getSlope(p2, p2: p3)
+                if fabs (slope1-slope2) < 0.3 && slope1*slope2 >= 0 {
                     self.selectIndexs[lastIndex][lastIndex1-1] = self.lastSelectPoint!
                 } else {
                     self.selectIndexs[lastIndex].append(self.lastSelectPoint!)

@@ -159,28 +159,44 @@ public class DFBle:NSObject, CBCentralManagerDelegate, CBPeripheralDelegate {
         sendString(cmdString)
     }
 
-    func sendMatrix (dataBuffer:[[Int]]) {
-        /*
-        let bufferMaxLength = 200
-        let frameDataMax = 128
+    func sendCommand(dataBuffer:[[Int]]) {
+        //let bufferMaxLength = 200
+        //let frameDataMax = 128
         let checksumInit:UInt8 = 0xAA
         let frameStartData:UInt8 = 0x5A
         var dataFrame:[UInt8] = [UInt8]()
+        var checkSum:UInt8 = checksumInit
         
-        for i in 0..<data.count {
-            for j in 0..<data[i].count {
-                
+        dataFrame.append(frameStartData)
+        dataFrame.append(UInt8(dataBuffer.count * 2))
+        
+        for i in 0..<dataBuffer.count {
+            let ind:UInt8 = UInt8(dataBuffer[i].count)
+            var data:UInt8 = ind & 0x7f
+            data |= 0
+            dataFrame.append(data)
+            checkSum ^= data
+            for j in 0..<dataBuffer[i].count {
+                let x :UInt8 = UInt8(dataBuffer[i][j] % 16)
+                let y :UInt8 = UInt8(dataBuffer[i][j] / 16)
+                let d:UInt8 = y << 4 | (x & 0x0F) ;
+                dataFrame.append(d)
+                checkSum ^= d
             }
         }
-        */
-        
-        
-        let x :UInt8 = 0x01;
-        let y :UInt8 = 0x02;
-        let d:UInt8 = y<<4 | (x & 0xF) ;
-        print(d);
+        dataFrame.append(checkSum)
+        sendArray(dataFrame)
     }
-
+    
+    func sendArray (value:[UInt8]) {
+        if value.count == 0 {
+            return
+        }
+        let data = NSData(bytes: value, length: value.count)
+        //println ("data: \(value.count) \(data)")
+        myperipheral?.writeValue(data, forCharacteristic: mychar!, type: CBCharacteristicWriteType.WithoutResponse)
+    }
+    
     
     @objc public func centralManagerDidUpdateState(central: CBCentralManager) {
         if centralManager.state == .PoweredOn {
